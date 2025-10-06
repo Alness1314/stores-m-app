@@ -59,6 +59,10 @@ class MainActivity : AppCompatActivity(), OnClickListener<StoreEntity>, MainAux 
     private fun launchEditFragment(args: Bundle? = null) {
         val fragment = EditStoreFragment()
 
+        if(args!=null){
+            fragment.arguments = args
+        }
+
         val fragmentManager = supportFragmentManager
         val fragmentTransaction = fragmentManager.beginTransaction()
 
@@ -82,6 +86,7 @@ class MainActivity : AppCompatActivity(), OnClickListener<StoreEntity>, MainAux 
     override fun onClick(item: StoreEntity) {
         val args = Bundle()
         args.putLong(getString(R.string.arg_id), item.id)
+        launchEditFragment(args)
     }
 
     override fun onFavorite(item: StoreEntity) {
@@ -117,7 +122,7 @@ class MainActivity : AppCompatActivity(), OnClickListener<StoreEntity>, MainAux 
     }
 
     override fun updateStore(storeEntity: StoreEntity) {
-        TODO("Not yet implemented")
+        mAdapter.update(storeEntity)
     }
 }
 
