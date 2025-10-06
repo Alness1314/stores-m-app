@@ -3,4 +3,10 @@
     <color name="black">#FF000000</color>
     <color name="white">#FFFFFFFF</color>
     <color name="color_white_alpha">#CDFFFFFF</color>
+
+    <color name="background_color">#FCF5FD</color>
+    <color name="background_icon_color">#49454F</color>
+    <color name="toolbar_icon_color">#1D1B20</color>
+
+
 </resources>

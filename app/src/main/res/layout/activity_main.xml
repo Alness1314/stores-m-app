@@ -7,33 +7,22 @@
     android:layout_height="match_parent"
     tools:context=".MainActivity">
 
-    <com.google.android.material.button.MaterialButton
-        android:id="@+id/button_save"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="@string/button_label_save"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintTop_toTopOf="parent"
-        android:layout_margin="@dimen/common_padding_default"
-        />
-
-    <EditText
-        android:id="@+id/input_add"
-        android:layout_marginHorizontal="@dimen/common_padding_default"
+    <com.google.android.material.appbar.MaterialToolbar
+        android:id="@+id/toolbar_header"
         android:layout_width="0dp"
-        android:layout_height="wrap_content"
+        android:layout_height="?attr/actionBarSize"
+        app:titleTextAppearance="@style/TextAppearance.AppCompat.Title"
+        app:title="@string/app_name"
         app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        android:hint="@string/input_label_add"
-        app:layout_constraintEnd_toStartOf="@+id/button_save"
-        app:layout_constraintBaseline_toBaselineOf="@id/button_save"/>
+        app:layout_constraintLeft_toLeftOf="parent"
+        app:layout_constraintRight_toRightOf="parent" />
 
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/recycler_view_stores"
         android:layout_width="0dp"
         android:layout_height="0dp"
         tools:listitem="@layout/item_store"
-        app:layout_constraintTop_toBottomOf="@+id/input_add"
+        app:layout_constraintTop_toBottomOf="@+id/toolbar_header"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintBottom_toBottomOf="parent"/>
