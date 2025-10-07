@@ -1,18 +1,21 @@
 package com.susess.storesex
 
+import android.content.Intent
 import android.os.Bundle
-import android.util.Log
+import android.widget.Toast
 import androidx.activity.enableEdgeToEdge
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
 import androidx.recyclerview.widget.GridLayoutManager
+import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.susess.storesex.adapters.StoreAdapter
 import com.susess.storesex.databinding.ActivityMainBinding
 import com.susess.storesex.interfaces.MainAux
 import com.susess.storesex.interfaces.OnClickListener
 import com.susess.storesex.models.store.StoreEntity
 import java.util.concurrent.LinkedBlockingQueue
+import androidx.core.net.toUri
 
 class MainActivity : AppCompatActivity(), OnClickListener<StoreEntity>, MainAux {
     private lateinit var binding: ActivityMainBinding
@@ -40,7 +43,7 @@ class MainActivity : AppCompatActivity(), OnClickListener<StoreEntity>, MainAux 
 
     private fun setupRecyclerView() {
         mAdapter = StoreAdapter(mutableListOf(), this)
-        mGridLayout = GridLayoutManager(this, 2)
+        mGridLayout = GridLayoutManager(this, resources.getInteger(R.integer.main_colums))
         findStores()
 
         binding.recyclerViewStores.apply {
@@ -57,7 +60,7 @@ class MainActivity : AppCompatActivity(), OnClickListener<StoreEntity>, MainAux 
     }
 
     private fun launchEditFragment(args: Bundle? = null) {
-        val fragment = EditStoreFragment()
+        val fragment = StoreFragment()
 
         if(args!=null){
             fragment.arguments = args
@@ -91,22 +94,71 @@ class MainActivity : AppCompatActivity(), OnClickListener<StoreEntity>, MainAux 
 
     override fun onFavorite(item: StoreEntity) {
         item.isFavorite = !item.isFavorite
-        Log.i("OnFavorite CLick", item.toString())
         val queue = LinkedBlockingQueue<StoreEntity>()
         Thread {
             StoresExApp.database.storeDao().update(item)
             queue.add(item)
         }.start()
-        mAdapter.update(queue.take())
+        updateStore(queue.take())
     }
 
     override fun onDelete(item: StoreEntity) {
-        val queue = LinkedBlockingQueue<StoreEntity>()
-        Thread {
-            StoresExApp.database.storeDao().delete(item)
-            queue.add(item)
-        }.start()
-        mAdapter.delete(queue.take())
+        val items = resources.getStringArray(R.array.array_options_items)
+        MaterialAlertDialogBuilder(this)
+            .setTitle(R.string.dialog_options_title)
+            .setItems(items) { dialogInterface, i ->
+                when (i) {
+                    0 -> confirmDelete(item)
+                    1 -> dial(item.phone!!)
+                    2 -> goToWebSite(item.webSite!!)
+                    else -> Toast.makeText(
+                        this,
+                        resources.getString(R.string.toast_message_option_default),
+                        Toast.LENGTH_SHORT
+                    ).show()
+                }
+            }
+            .show()
+    }
+
+    private fun dial(phone: String){
+        val callIntent = Intent().apply {
+            action = Intent.ACTION_DIAL
+            data = "tel:$phone".toUri()
+        }
+        startIntent(callIntent)
+    }
+
+    private fun goToWebSite(webSite: String){
+        val intent = Intent().apply {
+            action = Intent.ACTION_VIEW
+            data = webSite.toUri()
+        }
+        startIntent(intent)
+    }
+
+    private fun startIntent(intent: Intent){
+        if(intent.resolveActivity(packageManager) != null)
+            startActivity(intent)
+        else
+            Toast.makeText(this,
+                resources.getString(R.string.toast_message_option_default),
+                Toast.LENGTH_SHORT).show()
+    }
+
+    private fun confirmDelete(item: StoreEntity){
+        MaterialAlertDialogBuilder(this)
+            .setTitle(R.string.dialog_delete_title)
+            .setPositiveButton(R.string.dialog_delete_confirm) { dialogInterface, i ->
+                val queue = LinkedBlockingQueue<StoreEntity>()
+                Thread {
+                    StoresExApp.database.storeDao().delete(item)
+                    queue.add(item)
+                }.start()
+                mAdapter.delete(queue.take())
+            }
+            .setNegativeButton(R.string.dialog_delete_cancel, null)
+            .show()
     }
 
     override fun hideFab(hide: Boolean) {

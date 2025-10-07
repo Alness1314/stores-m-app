@@ -5,4 +5,5 @@
     <integer name="counter_max_web">255</integer>
     <integer name="lines_max_web">2</integer>
     <integer name="lines_url_photo">4</integer>
+    <integer name="main_colums">2</integer>
 </resources>

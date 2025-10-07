@@ -8,21 +8,25 @@ import android.view.MenuInflater
 import android.view.MenuItem
 import android.view.View
 import android.view.ViewGroup
-import android.widget.Toast
 import androidx.core.view.MenuHost
 import androidx.core.view.MenuProvider
 import androidx.core.widget.addTextChangedListener
+import androidx.core.widget.doOnTextChanged
 import androidx.lifecycle.Lifecycle
 import com.bumptech.glide.Glide
 import com.bumptech.glide.load.engine.DiskCacheStrategy
 import com.google.android.material.snackbar.Snackbar
-import com.susess.storesex.databinding.FragmentEditStoreBinding
+import com.google.android.material.textfield.TextInputLayout
+import com.susess.storesex.databinding.FragmentStoreBinding
 import com.susess.storesex.models.store.StoreEntity
+import com.susess.storesex.validaciones.isPhone
+import com.susess.storesex.validaciones.isUrl
+import com.susess.storesex.validaciones.isVoid
 import java.util.concurrent.LinkedBlockingQueue
 
 
-class EditStoreFragment : Fragment() {
-    private var _binding: FragmentEditStoreBinding? = null
+class StoreFragment : Fragment() {
+    private var _binding: FragmentStoreBinding? = null
     private val binding get() = _binding!!
     var activity: MainActivity? = null
     private var isEditMode: Boolean = false
@@ -33,8 +37,92 @@ class EditStoreFragment : Fragment() {
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View? {
-        _binding = FragmentEditStoreBinding.inflate(inflater, container, false)
+        _binding = FragmentStoreBinding.inflate(inflater, container, false)
         return binding.root
+    }
+
+    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+        super.onViewCreated(view, savedInstanceState)
+
+        val id = arguments?.getLong(getString(R.string.arg_id), 0)
+
+        if(id != null && id != 0L){
+            isEditMode = true
+            findStore(id)
+        }else {
+            isEditMode = false
+            storeEntity = StoreEntity(name="", phone ="", webSite = "", photoUrl="")
+        }
+
+        activity = requireActivity() as MainActivity
+
+        setupAcctionBar()
+
+        val menuHost: MenuHost = requireActivity()
+
+        setupMenuHost(menuHost)
+
+        binding.inputUrlImg.addTextChangedListener {
+            loadPhoto(binding.inputUrlImg.text.toString())
+        }
+
+        setupRealTimeValidation()
+    }
+
+    private fun setupAcctionBar(){
+        activity?.supportActionBar?.apply {
+            setDisplayHomeAsUpEnabled(true)
+            setDisplayShowHomeEnabled(true)
+            title = if(isEditMode) getString(R.string.title_fragment_update_store)
+            else getString(R.string.title_fragment_create_store)
+        }
+    }
+
+    private fun setupMenuHost(menuHost: MenuHost){
+        menuHost.addMenuProvider(object : MenuProvider {
+            override fun onCreateMenu(menu: Menu, menuInflater: MenuInflater) {
+                menuInflater.inflate(R.menu.menu_save, menu)
+            }
+
+            override fun onMenuItemSelected(menuItem: MenuItem): Boolean {
+                return when (menuItem.itemId) {
+                    R.id.action_save -> {
+                        if(storeEntity!=null && validateFields()){
+                            val queue = LinkedBlockingQueue<StoreEntity>()
+                            mapStore()
+                            Thread {
+                                if(isEditMode) StoresExApp.database.storeDao().update(storeEntity!!)
+                                else storeEntity!!.id = StoresExApp.database.storeDao().save(storeEntity!!)
+                                queue.add(storeEntity)
+                            }.start()
+                            with(queue.take()){
+                                var message = ""
+                                if(!isEditMode){
+                                    message = resources.getString(R.string.snackbar_message_save)
+                                    activity?.addStore(storeEntity!!)
+                                    parentFragmentManager.popBackStack()
+                                }else{
+                                    activity?.updateStore(storeEntity!!)
+                                    message = resources.getString(R.string.snackbar_message_update)
+                                }
+                                Snackbar.make(binding.root,
+                                    message,
+                                    Snackbar.LENGTH_SHORT)
+                                    .show()
+                            }
+                        }
+                        true
+                    }
+                    android.R.id.home -> {
+                        parentFragmentManager.popBackStack()
+                        true
+                    }
+                    else -> false
+                }
+            }
+
+
+        }, viewLifecycleOwner, Lifecycle.State.RESUMED)
     }
 
     private fun findStore(id: Long) {
@@ -58,100 +146,55 @@ class EditStoreFragment : Fragment() {
         }
     }
 
-    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
-        super.onViewCreated(view, savedInstanceState)
+    private fun setupRealTimeValidation() {
+        // Lista de campos con su validador
+        val validators = listOf(
+            Triple(binding.inputLayoutUrlImg, String::isUrl, getString(R.string.helper_error)),
+            Triple(binding.inputLayoutWebSite, String::isUrl, getString(R.string.helper_error)),
+            Triple(binding.inputLayoutPhone, String::isPhone, getString(R.string.helper_error)),
+            Triple(binding.inputLayoutName, String::isVoid, getString(R.string.helper_error))
+        )
 
-        val id = arguments?.getLong(getString(R.string.arg_id), 0)
+        validators.forEach { (inputLayout, validator, errorMsg) ->
+            inputLayout.editText?.doOnTextChanged { _, _, _, _ ->
+                validateField(inputLayout, validator, errorMsg)
+            }
+        }
+    }
 
-        if(id != null && id != 0L){
-            isEditMode = true
-            findStore(id)
+    private fun validateField(inputLayout: TextInputLayout,
+                              validator: (String) -> Boolean,
+                              errorMessage: String): Boolean{
+        val text = inputLayout.editText?.text.toString().trim()
+        return if(!validator(text)){
+            inputLayout.error = errorMessage
+            inputLayout.editText?.requestFocus()
+            false
         }else {
-            isEditMode = false
-            storeEntity = StoreEntity(name="", phone ="", webSite = "", photoUrl="")
-        }
-
-        activity = requireActivity() as MainActivity
-
-        activity?.supportActionBar?.apply {
-            setDisplayHomeAsUpEnabled(true)
-            setDisplayShowHomeEnabled(true)
-            title = getString(R.string.edit_store_title_add)
-        }
-
-        val menuHost: MenuHost = requireActivity()
-        menuHost.addMenuProvider(object : MenuProvider {
-            override fun onCreateMenu(menu: Menu, menuInflater: MenuInflater) {
-                menuInflater.inflate(R.menu.menu_save, menu)
-            }
-
-            override fun onMenuItemSelected(menuItem: MenuItem): Boolean {
-                return when (menuItem.itemId) {
-                    R.id.action_save -> {
-                        if(storeEntity!=null && validateFields()){
-                            val queue = LinkedBlockingQueue<StoreEntity>()
-                            mapStore()
-                            Thread {
-                                if(isEditMode) StoresExApp.database.storeDao().update(storeEntity!!)
-                                else storeEntity!!.id = StoresExApp.database.storeDao().save(storeEntity!!)
-                                queue.add(storeEntity)
-                            }.start()
-                            with(queue.take()){
-                                var message = ""
-                                if(!isEditMode){
-                                    message = "Tienda creada"
-                                    activity?.addStore(storeEntity!!)
-                                    parentFragmentManager.popBackStack()
-                                }else{
-                                    activity?.updateStore(storeEntity!!)
-                                    message = "Tienda actualizada"
-                                }
-                                Snackbar.make(binding.root,
-                                    message,
-                                    Snackbar.LENGTH_SHORT)
-                                    .show()
-                            }
-                        }
-                        true
-                    }
-                    android.R.id.home -> {
-                        parentFragmentManager.popBackStack()
-                        true
-                    }
-                    else -> false
-                }
-            }
-
-
-        }, viewLifecycleOwner, Lifecycle.State.RESUMED)
-
-        binding.inputUrlImg.addTextChangedListener {
-            loadPhoto(binding.inputUrlImg.text.toString())
+            inputLayout.error = null
+            true
         }
     }
 
     private fun validateFields(): Boolean {
        var isValid = true
-        if(binding.inputUrlImg.text.toString().trim().isEmpty()){
-            binding.inputLayoutUrlImg.error = getString(R.string.helper_required)
-            binding.inputUrlImg.requestFocus()
-            isValid = false
-        }
-        if(binding.inputWebSite.text.toString().trim().isEmpty()){
-            binding.inputLayoutWebSite.error = getString(R.string.helper_required)
-            binding.inputWebSite.requestFocus()
-            isValid = false
-        }
-        if(binding.inputPhone.text.toString().trim().isEmpty()){
-            binding.inputLayoutPhone.error = getString(R.string.helper_required)
-            binding.inputPhone.requestFocus()
-            isValid = false
-        }
-        if(binding.inputName.text.toString().trim().isEmpty()){
-            binding.inputLayoutName.error = getString(R.string.helper_required)
-            binding.inputName.requestFocus()
-            isValid = false
-        }
+
+      isValid = validateField(binding.inputLayoutUrlImg,
+          String::isUrl,
+          getString(R.string.helper_error)) && isValid
+
+        isValid = validateField(binding.inputLayoutWebSite,
+            String::isUrl,
+            getString(R.string.helper_error)) && isValid
+
+        isValid = validateField(binding.inputLayoutPhone,
+            String::isPhone,
+            getString(R.string.helper_error)) && isValid
+
+        isValid = validateField(binding.inputLayoutName,
+            String::isVoid,
+            getString(R.string.helper_error)) && isValid
+
         return isValid
     }
 

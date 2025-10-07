@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">Tiendas</string>
+
+    <string name="dialog_delete_title">Eliminar tienda</string>
+    <string name="dialog_delete_confirm">Eliminar</string>
+    <string name="dialog_delete_cancel">Cancelar</string>
+    <string name="dialog_options_title">¿Que deseas hacer?</string>
+
+    <string name="content_description_photo">Imagen de la tienda</string>
+
+    <string name="button_label_save">Guardar</string>
+
+    <string name="input_label_name">Nombre</string>
+    <string name="input_label_phone">Teléfono</string>
+    <string name="input_label_web">Sitio Web</string>
+    <string name="input_label_image_url">Url de la imagen</string>
+    <string name="helper_required">Requerido</string>
+    <string name="helper_error">Revise el campo. Es posible que esté vacío o que el formato sea incorrecto.</string>
+
+    <string name="button_save">Guardar</string>
+
+    <string name="title_fragment_update_store">Editar Tienda</string>
+    <string name="title_fragment_create_store">Crear Tienda</string>
+
+    <string name="array_options_eliminar">Eliminar</string>
+    <string name="array_options_dial">Llamar</string>
+    <string name="array_options_browser">Ir al sitio web</string>
+
+    <string name="toast_message_option_default">No se encontró una opción compatible</string>
+    <string name="snackbar_message_save">Tienda creada</string>
+    <string name="snackbar_message_update">Tienda actualizada</string>
+</resources>

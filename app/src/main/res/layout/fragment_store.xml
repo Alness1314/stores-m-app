@@ -3,10 +3,10 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="@color/background_color"
+    android:background="@color/md_theme_background"
     android:layout_marginTop="?attr/actionBarSize"
     xmlns:app="http://schemas.android.com/apk/res-auto"
-    tools:context=".EditStoreFragment">
+    tools:context=".StoreFragment">
 
     <LinearLayout
         android:layout_width="match_parent"
@@ -19,7 +19,7 @@
             android:id="@+id/input_layout_name"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:hint="@string/input_label_add"
+            android:hint="@string/input_label_name"
             app:helperText="@string/helper_required"
             app:endIconMode="clear_text"
             app:counterMaxLength="@integer/counter_max_name"
@@ -91,7 +91,8 @@
                 android:id="@+id/input_layout_url_img"
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
-                android:hint="@string/hint_url"
+                android:hint="@string/input_label_image_url"
+                app:helperText="@string/helper_required"
                 app:endIconMode="clear_text"
                 app:startIconDrawable="@drawable/ic_link_24"
                 style="@style/ThemeOverlay.Material3.AutoCompleteTextView.OutlinedBox.Dense"

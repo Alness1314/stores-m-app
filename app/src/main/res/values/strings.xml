@@ -1,15 +1,32 @@
 <resources>
-    <string name="app_name">Tiendas</string>
-    <string name="content_description_photo">Imagen de la tienda</string>
-    <string name="input_label_add">Nombre de la tienda</string>
-    <string name="button_label_save">Guardar</string>
-    <!-- TODO: Remove or change this placeholder text -->
-    <string name="hello_blank_fragment">Hello blank fragment</string>
-    <string name="helper_required">Requerido</string>
-    <string name="input_label_phone">Telefono</string>
-    <string name="input_label_web">Sitio Web</string>
-    <string name="hint_url">Url de la imagen</string>
-    <string name="edit_store_title_add">Crear Tienda</string>
-    <string name="menu_save">Save</string>
-    <string name="arg_id">key_id</string>
+    <string name="app_name">Stores</string>
+
+    <string name="arg_id" translatable="false">key_id</string>
+
+    <string name="dialog_delete_title">Delete Store</string>
+    <string name="dialog_delete_confirm">Delete</string>
+    <string name="dialog_delete_cancel">Cancel</string>
+    <string name="dialog_options_title">What would you like to do?</string>
+
+    <string name="content_description_photo">Store image</string>
+
+    <string name="button_label_save">Save</string>
+
+    <string name="input_label_name">Name</string>
+    <string name="input_label_phone">Phone</string>
+    <string name="input_label_web">Website</string>
+    <string name="input_label_image_url">Image URL</string>
+    <string name="helper_required">Required</string>
+    <string name="helper_error">Check the field. It might be empty or the format could be incorrect.</string>
+    <string name="button_save">Save</string>
+
+    <string name="title_fragment_update_store">Edit Store</string>
+    <string name="title_fragment_create_store">Create Store</string>
+
+    <string name="array_options_eliminar">Delete</string>
+    <string name="array_options_dial">Call</string>
+    <string name="array_options_browser">Go to website</string>
+    <string name="toast_message_option_default">No compatible option found</string>
+    <string name="snackbar_message_save">Store created</string>
+    <string name="snackbar_message_update">Store updated</string>
 </resources>

@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string-array name="array_options_items">
+        <item>@string/array_options_eliminar</item>
+        <item>@string/array_options_dial</item>
+        <item>@string/array_options_browser</item>
+    </string-array>
+</resources>
