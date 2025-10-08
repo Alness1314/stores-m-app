@@ -1,7 +1,6 @@
-package com.susess.storesex
+package com.susess.storesex.ui.store
 
 import android.os.Bundle
-import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.Menu
 import android.view.MenuInflater
@@ -12,18 +11,21 @@ import androidx.core.view.MenuHost
 import androidx.core.view.MenuProvider
 import androidx.core.widget.addTextChangedListener
 import androidx.core.widget.doOnTextChanged
+import androidx.fragment.app.Fragment
 import androidx.lifecycle.Lifecycle
 import com.bumptech.glide.Glide
 import com.bumptech.glide.load.engine.DiskCacheStrategy
 import com.google.android.material.snackbar.Snackbar
 import com.google.android.material.textfield.TextInputLayout
+import com.susess.storesex.R
+import com.susess.storesex.StoresExApp
 import com.susess.storesex.databinding.FragmentStoreBinding
 import com.susess.storesex.models.store.StoreEntity
+import com.susess.storesex.ui.main.MainActivity
 import com.susess.storesex.validaciones.isPhone
 import com.susess.storesex.validaciones.isUrl
 import com.susess.storesex.validaciones.isVoid
 import java.util.concurrent.LinkedBlockingQueue
-
 
 class StoreFragment : Fragment() {
     private var _binding: FragmentStoreBinding? = null
@@ -51,7 +53,7 @@ class StoreFragment : Fragment() {
             findStore(id)
         }else {
             isEditMode = false
-            storeEntity = StoreEntity(name="", phone ="", webSite = "", photoUrl="")
+            storeEntity = StoreEntity(name = "", phone = "", webSite = "", photoUrl = "")
         }
 
         activity = requireActivity() as MainActivity
@@ -91,8 +93,8 @@ class StoreFragment : Fragment() {
                             val queue = LinkedBlockingQueue<StoreEntity>()
                             mapStore()
                             Thread {
-                                if(isEditMode) StoresExApp.database.storeDao().update(storeEntity!!)
-                                else storeEntity!!.id = StoresExApp.database.storeDao().save(storeEntity!!)
+                                if(isEditMode) StoresExApp.Companion.database.storeDao().update(storeEntity!!)
+                                else storeEntity!!.id = StoresExApp.Companion.database.storeDao().save(storeEntity!!)
                                 queue.add(storeEntity)
                             }.start()
                             with(queue.take()){
@@ -128,7 +130,7 @@ class StoreFragment : Fragment() {
     private fun findStore(id: Long) {
         val queue = LinkedBlockingQueue<StoreEntity>()
         Thread {
-            storeEntity = StoresExApp.database.storeDao().findOne(id)
+            storeEntity = StoresExApp.Companion.database.storeDao().findOne(id)
             queue.add(storeEntity)
         }.start()
         queue.take()?.let {

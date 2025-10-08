@@ -1,26 +1,34 @@
-package com.susess.storesex
+package com.susess.storesex.ui.main
 
 import android.content.Intent
 import android.os.Bundle
 import android.widget.Toast
 import androidx.activity.enableEdgeToEdge
 import androidx.appcompat.app.AppCompatActivity
+import androidx.core.net.toUri
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
+import androidx.lifecycle.ViewModelProvider
 import androidx.recyclerview.widget.GridLayoutManager
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
+import com.susess.storesex.R
+import com.susess.storesex.ui.store.StoreFragment
+import com.susess.storesex.StoresExApp
 import com.susess.storesex.adapters.StoreAdapter
 import com.susess.storesex.databinding.ActivityMainBinding
 import com.susess.storesex.interfaces.MainAux
 import com.susess.storesex.interfaces.OnClickListener
 import com.susess.storesex.models.store.StoreEntity
 import java.util.concurrent.LinkedBlockingQueue
-import androidx.core.net.toUri
+
 
 class MainActivity : AppCompatActivity(), OnClickListener<StoreEntity>, MainAux {
     private lateinit var binding: ActivityMainBinding
     private lateinit var mAdapter: StoreAdapter
     private lateinit var mGridLayout: GridLayoutManager
+
+    //MVVM
+    private lateinit var mMainViewModel: MainViewModel
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -37,14 +45,23 @@ class MainActivity : AppCompatActivity(), OnClickListener<StoreEntity>, MainAux 
         // registrar toolbar como ActionBar
         setSupportActionBar(binding.toolbarHeader)
 
+        setupViewModel()
+
         setupRecyclerView()
         setupListeners()
+    }
+
+    private fun setupViewModel() {
+        mMainViewModel = ViewModelProvider(this)[MainViewModel::class.java]
+        mMainViewModel.stores.observe(this) { stores ->
+            mAdapter.setStores(stores.toMutableList())
+        }
     }
 
     private fun setupRecyclerView() {
         mAdapter = StoreAdapter(mutableListOf(), this)
         mGridLayout = GridLayoutManager(this, resources.getInteger(R.integer.main_colums))
-        findStores()
+        //findStores()
 
         binding.recyclerViewStores.apply {
             setHasFixedSize(true)
@@ -76,15 +93,15 @@ class MainActivity : AppCompatActivity(), OnClickListener<StoreEntity>, MainAux 
         hideFab(true)
     }
 
-    private fun findStores(){
+    /*private fun findStores(){
         val queue = LinkedBlockingQueue<MutableList<StoreEntity>>()
         Thread {
-            val stores = StoresExApp.database.storeDao().find()
+            val stores = StoresExApp.Companion.database.storeDao().find()
             queue.add(stores)
         }.start()
 
         mAdapter.setStores(queue.take())
-    }
+    }*/
 
     override fun onClick(item: StoreEntity) {
         val args = Bundle()
@@ -96,7 +113,7 @@ class MainActivity : AppCompatActivity(), OnClickListener<StoreEntity>, MainAux 
         item.isFavorite = !item.isFavorite
         val queue = LinkedBlockingQueue<StoreEntity>()
         Thread {
-            StoresExApp.database.storeDao().update(item)
+            StoresExApp.Companion.database.storeDao().update(item)
             queue.add(item)
         }.start()
         updateStore(queue.take())
@@ -152,7 +169,7 @@ class MainActivity : AppCompatActivity(), OnClickListener<StoreEntity>, MainAux 
             .setPositiveButton(R.string.dialog_delete_confirm) { dialogInterface, i ->
                 val queue = LinkedBlockingQueue<StoreEntity>()
                 Thread {
-                    StoresExApp.database.storeDao().delete(item)
+                    StoresExApp.Companion.database.storeDao().delete(item)
                     queue.add(item)
                 }.start()
                 mAdapter.delete(queue.take())
@@ -177,7 +194,3 @@ class MainActivity : AppCompatActivity(), OnClickListener<StoreEntity>, MainAux 
         mAdapter.update(storeEntity)
     }
 }
-
-
-
-
